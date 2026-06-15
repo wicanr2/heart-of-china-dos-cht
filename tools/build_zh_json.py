@@ -68,8 +68,9 @@ def collapse_options(s):
     """Numbered-option choice lists ('1. .. \\r\\r 2. ..') overflow the dialog box at
     24px CJK because each \\r\\r adds a blank line. Tighten \\r\\r->\\r for option lists
     (>=2 numbered markers). Leaves narration paragraph breaks alone."""
-    if '\r\r' in s and len(_OPT_RE.findall(s)) >= 2:
-        s = s.replace('\r\r', '\r')
+    if '\r' in s and len(_OPT_RE.findall(s)) >= 2:
+        # collapse blank lines between options, incl. CRs separated by spaces ("\r \r")
+        s = re.sub(r'\r[ \t]*(?:\r[ \t]*)+', '\r', s)
     return s
 
 def load_units():
