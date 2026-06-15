@@ -71,10 +71,13 @@
 - [x] F8 顯示模式切換 = ROTD patch 既有（setMode；autopilot `lang` 同機制），HOC 沿用
 - [ ] 全劇本/全 UI 翻譯後再做逐場景 F8 英↔中視覺複查
 
-### Phase 3 — UI 中文化 + 全量翻譯（4651 句）⬜
-- [ ] 抽 TTM 畫面文字 + REQ/RST UI + 名牌清單
-- [ ] 多代理平行機翻 4651 句（套譯名表、Big5-safe、民初冒險語氣）→ 合併 → 正規化 →
-      驗證 0 非 Big5 → 打包 `zh.dtr`
+### Phase 3 — UI 中文化 + 全量翻譯（4651 句）🚧
+- [x] **對白 + 名牌全量翻譯**：`prep_translation.py` 拆出 4508 unique units（4386 對白 + 122 名牌/道具），
+      46 批多代理平行機翻（套譯名表、民初冒險語氣、Big5 約束）→ `build_zh_json.py` 合併 +
+      正規化（`‧`→`·` 等）+ 強制套譯名表 → **4771/4771 keys、0 缺、0 非 Big5** → `zh.dtr`（228KB，0 缺字）
+- [x] 實機驗證：scene d12 多句中文上畫面（`screenshots/showcase_zh_*.png`）
+- [ ] UI/選單（`hinv.req`/`hvcr.req`/`hoc.rst`）+ TTM 畫面文字（電報/告示/螢幕）抽取與翻譯
+- [ ] 人工潤飾關鍵劇情對白
 
 ### Phase 4 — game-tester QA + 視覺驗證 ⬜
 - [ ] HOC autopilot 腳本，逐場景截圖、排版/斷行 QA、showcase

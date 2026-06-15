@@ -75,7 +75,7 @@ def read_dialoglist(r, ver, out, filenum):
         read_dialogactionlist(r)
         if s:
             out.append(dict(file=filenum, num=num, rect=[rx, ry, rw, rh],
-                            bg=bg, fg=fg, fontsize=fontsize, text=s))
+                            bg=bg, fg=fg, fontsize=fontsize, frametype=frametype, text=s))
 
 def parse_dds(path):
     data = open(path, 'rb').read()

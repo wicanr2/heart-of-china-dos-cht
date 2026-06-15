@@ -44,3 +44,6 @@ scripts/_*.sh
 *.iso
 *.7z
 *BIOS*.zip
+
+# Translation intermediates (src_units.json = copyrighted EN script; regenerate via prep_translation.py)
+i18n/
