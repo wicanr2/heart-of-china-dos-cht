@@ -48,6 +48,20 @@
 
 修正後實機複驗：主選單「錄影」乾淨、18:51 避頭點正確、96:22 下框完整、名牌（齊豪/凱蒂/守衛）置中。
 
+## Round 3 — 觀看介紹 fatal 修正
+
+使用者實玩 FULL 包、觀看片頭時掉進 ScummVM debugger：
+`ERROR: Image::width: Invalid frameno 7 requested from shape 'NEWTS3A.BMP'!`
+
+**根因**：Round 2 從 ROTD port 的 `ttm.cpp` 視訊臉 `clearDeferredBgRect` 修正，在 `drawBitmap`
+後**無條件**呼叫 `img->width/height(frameno)`；片頭某 TTM 動畫請求超出該 shape 幀數的 frameno
+—— `drawBitmap` 容忍（略過），但 `Image::width/height` 對越界 frameno 直接 `error()` → fatal。
+（HOC 特有；ROTD 片頭未觸發這條，所以 port 過來才暴露。）
+
+**修正**：`ttm.cpp` 加 `frameno >= 0 && frameno < img->loadedFrameCount()` 防護（與 `head.cpp`
+同樣式）才取 width/height。實機跑片頭 30s+ 無 error、無 debugger，FULL AppImage 從空目錄直接
+boot 內嵌遊戲、片頭順跑。
+
 ## 翻譯抽樣（民初冒險通俗派語氣）
 
 | key | EN | ZH |
