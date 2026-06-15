@@ -1,0 +1,46 @@
+# ===== Copyrighted game data — NEVER commit (derivative localization work only) =====
+*.zip
+# Game install dirs (any language)
+game/
+game_en/
+game_*/
+# Extracted game resources (bitmaps, scripts, fonts, songs — all copyrighted)
+extracted/
+extracted_*/
+res/
+res_*/
+# Original game binaries / volumes / index
+*.EXE
+*.exe
+VOLUME.*
+*.RMF
+TANK.*
+HOC-SAVE.ZIP
+# Extracted source scripts (copyrighted original text) — regenerate locally via extract_dds.py
+dialogs_en.json
+dialogs_*.json
+
+# ===== Build artifacts =====
+*.pyc
+__pycache__/
+build/
+scummvm-src/
+scummvm/
+*.AppImage
+*.dcjk
+fonts/*.dcjk
+dist/
+autopilot.txt
+autopilot_shots/
+
+# ===== Screenshots with game art (showcase curated ones committed explicitly) =====
+screenshots/_*.png
+scripts/_*.sh
+
+# ===== BIOS / disc images =====
+*.chd
+*.bin
+*.cue
+*.iso
+*.7z
+*BIOS*.zip
