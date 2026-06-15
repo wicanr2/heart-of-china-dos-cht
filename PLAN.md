@@ -56,15 +56,20 @@
 - [x] Cast 盤點：LUCKY 1513 / CHI 552 / KATE 552 / LOMAX / LI DENG …
 - [x] 確認 ScummVM dgds 引擎已支援 `GID_HOC`
 
-### Phase 1 — CJK 字型 + 引擎渲染 PoC 🚧
-- [ ] clone ScummVM @ `f4526cf`，套 `dgds-cjk.patch`，build dgds 引擎，HOC 英文基線可跑
-- [ ] `build_cjk_font.py --size 24` → `hoc_zh24.dcjk`
-- [ ] **改 patch 對白鍵**：`drawForeground` 對 `GID_HOC` 用 `lookupDialog(_fileNum, _num)`
-- [ ] 驗收：第一句中文上畫面
+### Phase 1 — CJK 字型 + 引擎渲染 PoC ✅
+- [x] ScummVM @ `f4526cf` + `dgds-cjk.patch`，build dgds 引擎，HOC 可跑（headless）
+- [x] `build_cjk_font.py --size 24` → `hoc_zh24.dcjk`（13709 glyphs，1.4MB）
+- [x] **對白鍵改 game-agnostic**：`dialog.cpp drawForeground` 用 `_fileNum ? _fileNum : sceneNum`
+      （HOC 走 DDS fileNum、ROTD 走 scene；同一 binary 兩款通吃）
+- [x] **autopilot `dlg` 支援 `F:N`**（HOC DDS 對白）：`autopilot.cpp` showDialog(fileNum,num)
+- [x] **驗收**：scene d12 對白渲染為「老馬，我們不能丟下凱特護士就走！」+ 名牌「趙奇」
+      真 24×24（`screenshots/poc_zh_d12_1.png`、`poc_zh_d12_27.png`）
 
-### Phase 2 — 翻譯 overlay + F8 語言切換 ⬜
-- [ ] `build_translation.py` 支援 `fileNum:num` + `UI:<src>` 鍵
-- [ ] 引擎載 `zh.dtr`，三路徑查表替換，F8 即時切換 + 重繪
+### Phase 2 — 翻譯 overlay + F8 語言切換 ✅（機制）
+- [x] `build_translation.py` 鍵格式 `fileNum:num`（對白）+ `UI:<src>`（名牌/UI）— 打包器本就泛用
+- [x] 引擎載 `zh.dtr`，對白（drawForeground）+ 名牌（drawHeader lookupUI）查表替換實機驗證
+- [x] F8 顯示模式切換 = ROTD patch 既有（setMode；autopilot `lang` 同機制），HOC 沿用
+- [ ] 全劇本/全 UI 翻譯後再做逐場景 F8 英↔中視覺複查
 
 ### Phase 3 — UI 中文化 + 全量翻譯（4651 句）⬜
 - [ ] 抽 TTM 畫面文字 + REQ/RST UI + 名牌清單
