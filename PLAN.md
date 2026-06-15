@@ -95,7 +95,7 @@
       `scripts/package_appimage.sh` → `Heart-of-China-CHT-x86_64.AppImage`（27M）。皆對乾淨遊戲目錄實機驗證中文（--extrapath）。
 - [x] **Windows**：`scripts/build_windows.sh`（Docker mingw 交叉編譯 dgds）→ `scummvm.exe`(27M)+SDL2.dll+資產+`.bat` → `hoc-cht-windows-x86_64.zip`（12M）。
       exe 靜態連 C++ runtime（objdump 確認只依 SDL2.dll + 系統 DLL）；wine 下 --version + 偵測/執行 HOC 驗證通過。
-- [x] **macOS**：`.github/workflows/build.yml`（macos-14 runner clone scummvm@f4526cf + 套 patch + 產資產 + dylibbundler `.app`）。push 後可在 GitHub Actions 跑出 `Heart of China CHT.app`。
+- [x] **macOS**：`.github/workflows/build.yml`（macos-14 runner clone scummvm@f4526cf + 套 patch + 產資產 + dylibbundler `.app`）。**CI run 成功**（patch 套用 + dgds build + `.app` 打包，7m53s），artifact `hoc-cht-macos`。
 - 安全：dist/ 產物（含/不含遊戲）皆 gitignore，不發布。
 
 ## 參考
