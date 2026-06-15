@@ -83,7 +83,9 @@
       `build_zh_json.py` 合併。autopilot 加 `menu` op → 實機驗證**主選單整套中文**
       （`screenshots/showcase_zh_menu.png`）
 - [x] **TTM 畫面文字**：HOC 僅 1 條（`ftank3s.ttm` "MEANWHILE"→「與此同時」），已補
-- [ ] 人工潤飾關鍵劇情對白（選擇性）
+- [x] **遊戲文案專家潤稿**：46 批 multi-agent review（資深在地化編輯，套官方手冊劇情脈絡 +
+      角色聲音 + 軟體世界語感），**1,879 句改寫**（來福痞氣/賽奇忍者簡潔腔/凱特機伶/鄧利軍閥威）。
+      `build_zh_json` overlay `i18n/review/` 於機翻之上。0 非 Big5。
 
 ### Phase 4 — game-tester QA + 視覺驗證 ⬜
 - [ ] HOC autopilot 腳本，逐場景截圖、排版/斷行 QA、showcase

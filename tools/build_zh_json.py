@@ -68,15 +68,22 @@ def collapse_options(s):
     return s
 
 def load_units():
+    """Base = machine translation (i18n/out/); overlay = 文案 review refinements (i18n/review/)."""
     units = {}
-    for f in sorted(glob.glob('i18n/out/b*.json')):
-        try:
-            d = json.load(open(f, encoding='utf-8'))
-        except Exception as e:
-            print(f"  BAD out file {f}: {e}", file=sys.stderr); continue
-        for uid, zh in d.items():
-            if isinstance(zh, str):
-                units[uid] = normalize(zh)
+    n_rev = 0
+    for src_glob, tag in (('i18n/out/b*.json', 'out'), ('i18n/review/b*.json', 'review')):
+        for f in sorted(glob.glob(src_glob)):
+            try:
+                d = json.load(open(f, encoding='utf-8'))
+            except Exception as e:
+                print(f"  BAD {tag} file {f}: {e}", file=sys.stderr); continue
+            for uid, zh in d.items():
+                if isinstance(zh, str) and zh.strip():
+                    units[uid] = normalize(zh)
+                    if tag == 'review':
+                        n_rev += 1
+    if n_rev:
+        print(f"# overlaid {n_rev} 文案-reviewed unit translations", file=sys.stderr)
     return units
 
 def main():
