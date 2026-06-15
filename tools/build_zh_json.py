@@ -17,9 +17,12 @@ import json, glob, os, sys, re
 RENAME = [  # (machine draft, 官方軟體世界) — value-only replace, longest/compound first
     ("傑克·馬斯特斯", "傑克馬斯特斯"), ("傑克·馬斯特", "傑克馬斯特斯"),
     ("老馬", "來福"), ("趙奇", "賽奇"),
-    ("李鄧", "鄧立"), ("羅麥斯", "羅麥士"),
+    ("李鄧", "鄧利"), ("羅麥斯", "羅梅士"),
+    # fix earlier OCR-misreads already shipped:
+    ("鄧立", "鄧利"), ("羅麥士", "羅梅士"),
 ]
-# Kate = 凱特 (官方; 手冊掃描看似「凱茶」實為 OCR 誤讀，已更正)
+# 官方手冊（故事大綱）：羅梅士(Lomax)、鄧利(軍閥 Li Deng)、來福(Lucky)、賽奇(中國忍者 Chi)。
+# Kate = 凱特 (使用者定案；手冊印刷字 OCR 不清，從使用者)
 def apply_rename(s):
     for a, b in RENAME:
         if a in s:
@@ -28,8 +31,8 @@ def apply_rename(s):
 
 # Canonical nameplates / recurring proper nouns — override agent output for 100% consistency.
 CANON = {
-    "UI:LUCKY": "來福", "UI:CHI": "賽奇", "UI:KATE": "凱特", "UI:LOMAX": "羅麥士",
-    "UI:LI DENG": "鄧立", "UI:DENG": "鄧立", "UI:Li Deng": "鄧立",
+    "UI:LUCKY": "來福", "UI:CHI": "賽奇", "UI:KATE": "凱特", "UI:LOMAX": "羅梅士",
+    "UI:LI DENG": "鄧利", "UI:DENG": "鄧利", "UI:Li Deng": "鄧利",
     "UI:SARDAR": "薩達爾", "UI:AMA": "阿瑪", "UI:WU": "吳", "UI:HO": "何",
     "UI:LAMA": "喇嘛", "UI:KUBLA": "忽必", "UI:BIJAYA": "比賈亞", "UI:NALINI": "娜里妮",
     "UI:HAKIM": "哈金", "UI:KASIM": "卡辛", "UI:ALMIRA": "艾米拉",
