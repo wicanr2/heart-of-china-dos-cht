@@ -50,6 +50,12 @@ NORMALIZE = {
     '‘': "'", '’': "'",  # ‘ ’ -> '
     '“': '「', '”': '」',  # “ ” -> 「 」
     '﹕': '：', '；': '；',
+    '\t': ' ',  # tabs render undefined in the CJK path -> space
+}
+
+# Hand corrections for specific dialog keys (survive rebuilds; applied last).
+POST_FIX = {
+    "28:218": "我這人，本來就『來福』啊。",  # pun: "I already am Lucky" -> his name 來福 = 福來/走運
 }
 def normalize(s):
     for a, b in NORMALIZE.items():
@@ -120,6 +126,10 @@ def main():
             if nv != zh[k]:
                 zh[k] = nv; n_opt += 1
     print(f"# renamed {n_ren} values to official 譯名, collapsed {n_opt} option lists", file=sys.stderr)
+    # hand corrections (last word)
+    for k, v in POST_FIX.items():
+        if k in zh:
+            zh[k] = v
     # Big5 check
     bad = []
     for k, v in zh.items():
