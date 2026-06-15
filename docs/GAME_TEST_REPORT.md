@@ -8,7 +8,7 @@
 | 項目 | 結果 | 證據 |
 |---|---|---|
 | DDS 對白渲染（`(fileNum,num)` 鍵）| ✅ | `screenshots/poc_zh_d12_1.png` |
-| 名牌（drawHeader → lookupUI）| ✅ 賽奇/來福/凱特（官方軟體世界譯名）| 同上 |
+| 名牌（drawHeader → lookupUI）| ✅ 齊豪/來福/凱蒂（官方軟體世界譯名）| 同上 |
 | 對話框框型：border（drawType2）| ✅ | `showcase_zh_chi.png` |
 | 對話框框型：thought bubble（drawType3）| ✅ | `showcase_zh_thought.png` |
 | F8 模式：英文（原始）| ✅ | `poc_en_d12_1.png` |

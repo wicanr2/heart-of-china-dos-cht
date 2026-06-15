@@ -62,7 +62,7 @@
 - [x] **對白鍵改 game-agnostic**：`dialog.cpp drawForeground` 用 `_fileNum ? _fileNum : sceneNum`
       （HOC 走 DDS fileNum、ROTD 走 scene；同一 binary 兩款通吃）
 - [x] **autopilot `dlg` 支援 `F:N`**（HOC DDS 對白）：`autopilot.cpp` showDialog(fileNum,num)
-- [x] **驗收**：scene d12 對白渲染為「來福，我們不能丟下凱特護士不管！」+ 名牌「賽奇」（官方軟體世界譯名）
+- [x] **驗收**：scene d12 對白渲染為「來福，我們不能丟下凱蒂護士不管！」+ 名牌「齊豪」（官方軟體世界譯名）
       真 24×24（`screenshots/poc_zh_d12_1.png`、`poc_zh_d12_27.png`）
 
 ### Phase 2 — 翻譯 overlay + F8 語言切換 ✅（機制）
@@ -84,7 +84,7 @@
       （`screenshots/showcase_zh_menu.png`）
 - [x] **TTM 畫面文字**：HOC 僅 1 條（`ftank3s.ttm` "MEANWHILE"→「與此同時」），已補
 - [x] **遊戲文案專家潤稿**：46 批 multi-agent review（資深在地化編輯，套官方手冊劇情脈絡 +
-      角色聲音 + 軟體世界語感），**1,879 句改寫**（來福痞氣/賽奇忍者簡潔腔/凱特機伶/鄧利軍閥威）。
+      角色聲音 + 軟體世界語感），**1,879 句改寫**（來福痞氣/齊豪忍者簡潔腔/凱蒂機伶/鄧利軍閥威）。
       `build_zh_json` overlay `i18n/review/` 於機翻之上。0 非 Big5。
 
 ### Phase 4 — game-tester QA + 視覺驗證 ⬜
