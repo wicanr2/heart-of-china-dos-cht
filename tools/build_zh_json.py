@@ -20,6 +20,8 @@ RENAME = [  # (machine draft, 官方軟體世界) — value-only replace, longes
     ("李鄧", "鄧利"), ("羅麥斯", "羅梅士"),
     # fix earlier OCR-misreads already shipped:
     ("鄧立", "鄧利"), ("羅麥士", "羅梅士"), ("賽奇", "齊豪"), ("凱茶", "凱蒂"),
+    # 配角音譯定案（propagate into dialogue bodies; targets verified 0 prior occurrences):
+    ("忽必", "庫布拉"), ("阿賈伊", "阿賈伊布"), ("娜里妮", "娜莉妮"),
 ]
 # 官方手冊（故事大綱）：來福(Lucky)、齊豪(中國忍者 Zhao Chi)、凱蒂(Kate)、羅梅士(Lomax)、鄧利(軍閥 Li Deng)。
 def apply_rename(s):
@@ -32,14 +34,17 @@ def apply_rename(s):
 CANON = {
     "UI:LUCKY": "來福", "UI:CHI": "齊豪", "UI:KATE": "凱蒂", "UI:LOMAX": "羅梅士",
     "UI:LI DENG": "鄧利", "UI:DENG": "鄧利", "UI:Li Deng": "鄧利",
-    "UI:SARDAR": "薩達爾", "UI:AMA": "阿瑪", "UI:WU": "吳", "UI:HO": "何",
-    "UI:LAMA": "喇嘛", "UI:KUBLA": "忽必", "UI:BIJAYA": "比賈亞", "UI:NALINI": "娜里妮",
-    "UI:HAKIM": "哈金", "UI:KASIM": "卡辛", "UI:ALMIRA": "艾米拉",
-    "UI:MOHMAR": "莫瑪", "UI:MOMAR": "莫瑪", "UI:HOJI": "霍吉", "UI:BOJON": "波瓊",
-    "UI:ACAYIB": "阿賈伊", "UI:GUARD": "守衛", "UI:Guard": "守衛",
-    "UI:PEASANT": "農夫", "UI:Peasant": "農夫", "UI:GOON": "打手", "UI:OLD WOMAN": "老婦",
-    "UI:KATE, LUCKY": "凱特、老馬", "UI:LUCKY & CHI": "老馬與趙奇",
-    "UI:LUCKY, KATE, CHI": "老馬、凱特、趙奇", "UI:PEASANT (CHI)": "農夫（趙奇）",
+    # 配角音譯定案（尼泊爾 / 印度 / 西藏 / 土耳其；手冊未收錄，依角色與名源音譯）
+    "UI:SARDAR": "薩達爾", "UI:AMA": "阿瑪", "UI:BIJAYA": "比賈亞", "UI:JYAPU": "賈普",
+    "UI:NALINI": "娜莉妮", "UI:KUBLA": "庫布拉", "UI:LAMA": "喇嘛", "UI:DISCIPLE": "弟子",
+    "UI:MOHMAR": "莫瑪", "UI:MOMAR": "莫瑪", "UI:KASIM": "卡辛", "UI:ACAYIB": "阿賈伊布",
+    "UI:HAKIM": "哈金", "UI:ALMIRA": "艾米拉", "UI:HOJI": "霍吉", "UI:BOJON": "波瓊",
+    "UI:NABOB": "納波布", "UI:TONG": "童", "UI:WU": "吳", "UI:HO": "何",
+    # 職稱/群體（意譯）
+    "UI:GUARD": "守衛", "UI:Guard": "守衛", "UI:PEASANT": "農夫", "UI:Peasant": "農夫",
+    "UI:GOON": "打手", "UI:OLD WOMAN": "老婦",
+    "UI:KATE, LUCKY": "凱蒂、來福", "UI:LUCKY & CHI": "來福與齊豪",
+    "UI:LUCKY, KATE, CHI": "來福、凱蒂、齊豪", "UI:PEASANT (CHI)": "農夫（齊豪）",
 }
 
 # Agent-noise / typographic chars not in Big5 -> Big5-safe equivalents.
@@ -102,10 +107,6 @@ def main():
             zh[k] = units[uid]
         else:
             missing.append((k, uid))
-    # enforce canonical nameplates
-    for k, v in CANON.items():
-        if k in key_map:
-            zh[k] = v
     # merge hand-authored UI / system-menu / TTM supplement (lookupUI keys)
     sup_path = 'translations/ui_supplement.json'
     if os.path.exists(sup_path):
@@ -127,6 +128,10 @@ def main():
             if nv != zh[k]:
                 zh[k] = nv; n_opt += 1
     print(f"# renamed {n_ren} values to official 譯名, collapsed {n_opt} option lists", file=sys.stderr)
+    # enforce canonical nameplates LAST (after rename) so they are final, not re-renamed
+    for k, v in CANON.items():
+        if k in key_map:
+            zh[k] = v
     # hand corrections (last word)
     for k, v in POST_FIX.items():
         if k in zh:
