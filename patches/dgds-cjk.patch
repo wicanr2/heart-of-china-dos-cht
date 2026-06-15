@@ -1399,7 +1399,7 @@ index 29ca00a6..895b57ba 100644
  	GameItem *getDragItem() { return _dragItem; }
  	void setDragItem(GameItem *item) { _dragItem = item; }
 diff --git a/engines/dgds/ttm.cpp b/engines/dgds/ttm.cpp
-index 36ed1bc4..398cc0f2 100644
+index 36ed1bc4..99a151ba 100644
 --- a/engines/dgds/ttm.cpp
 +++ b/engines/dgds/ttm.cpp
 @@ -27,6 +27,7 @@
@@ -1522,20 +1522,23 @@ index 36ed1bc4..398cc0f2 100644
  		} while( true );
  
  		break;
-@@ -606,6 +607,12 @@ void TTMInterpreter::doDrawSpriteOp(const TTMEnviro &env, const TTMSeq &seq, uin
+@@ -606,6 +607,15 @@ void TTMInterpreter::doDrawSpriteOp(const TTMEnviro &env, const TTMSeq &seq, uin
  			y += env._yOff;
  		}
  		img->drawBitmap(frameno, x, y, seq._drawWin, _vm->_compositionBuffer, flipMode, dstWidth, dstHeight);
 +		// CHT: this sprite covers its region in the pixel buffer (e.g. the videophone caller
 +		// face over the message header). Drop the persistent CJK overlay it overwrites so the
-+		// header stops floating during playback.
-+		int _bw = img->width(frameno), _bh = img->height(frameno);
-+		if (_bw > 0 && _bh > 0)
-+			_vm->getCJK().clearDeferredBgRect(Common::Rect(x, y, x + _bw, y + _bh));
++		// header stops floating during playback. Guard frameno: drawBitmap tolerates an
++		// out-of-range frame, but Image::width/height error() on it (e.g. intro NEWTS3A.BMP).
++		if (frameno >= 0 && frameno < img->loadedFrameCount()) {
++			int _bw = img->width(frameno), _bh = img->height(frameno);
++			if (_bw > 0 && _bh > 0)
++				_vm->getCJK().clearDeferredBgRect(Common::Rect(x, y, x + _bw, y + _bh));
++		}
  	} else {
  		warning("Trying to draw image %d in env %d which is not loaded", bmpNo, env._enviro);
  	}
-@@ -624,7 +631,7 @@ void TTMInterpreter::doFadeOutOp(int16 colorno, int16 ncolors, int16 targetcol,
+@@ -624,7 +634,7 @@ void TTMInterpreter::doFadeOutOp(int16 colorno, int16 ncolors, int16 targetcol,
  		for (int i = 0; i < 320; i += speed) {
  			int fade = MIN(i / 5, 63);
  			_vm->getGamePals()->setFade(colorno, ncolors, targetcol, fade * 4);
@@ -1544,7 +1547,7 @@ index 36ed1bc4..398cc0f2 100644
  			g_system->delayMillis(5);
  		}
  
-@@ -640,8 +647,8 @@ void TTMInterpreter::doFadeOutOp(int16 colorno, int16 ncolors, int16 targetcol,
+@@ -640,8 +650,8 @@ void TTMInterpreter::doFadeOutOp(int16 colorno, int16 ncolors, int16 targetcol,
  		_vm->getBackgroundBuffer().fillRect(Common::Rect(SCREEN_WIDTH, SCREEN_HEIGHT), 0);
  	} else {
  		// In Willy Beamish, copy comp->screen and comp->back
@@ -1555,7 +1558,7 @@ index 36ed1bc4..398cc0f2 100644
  		_vm->getBackgroundBuffer().blitFrom(_vm->_compositionBuffer);
  	}
  	// Stored area is cleared in all games.
-@@ -661,9 +668,9 @@ void TTMInterpreter::doFadeInOp(int16 colorno, int16 ncolors, int16 targetcol, i
+@@ -661,9 +671,9 @@ void TTMInterpreter::doFadeInOp(int16 colorno, int16 ncolors, int16 targetcol, i
  			_vm->getGamePals()->setFade(colorno, ncolors, targetcol, fade * 4);
  			if (i == 320) {
  				// update screen first to make the initial fade-in work
@@ -1567,7 +1570,7 @@ index 36ed1bc4..398cc0f2 100644
  			g_system->delayMillis(5);
  		}
  
-@@ -879,9 +886,9 @@ void TTMInterpreter::handleOperation(TTMEnviro &env, TTMSeq &seq, uint16 op, byt
+@@ -879,9 +889,9 @@ void TTMInterpreter::handleOperation(TTMEnviro &env, TTMSeq &seq, uint16 op, byt
  		_doScroll(_vm->_compositionBuffer, ivals[0], ivals[1], ivals[2]);
  		// After scroll, we need to store the screen contents into the
  		// stored area buffer, and copy the background to the front?
@@ -1579,7 +1582,7 @@ index 36ed1bc4..398cc0f2 100644
  		_vm->_compositionBuffer.blitFrom(_vm->getStoredAreaBuffer());
  		break;
  	}
-@@ -905,6 +912,8 @@ void TTMInterpreter::handleOperation(TTMEnviro &env, TTMSeq &seq, uint16 op, byt
+@@ -905,6 +915,8 @@ void TTMInterpreter::handleOperation(TTMEnviro &env, TTMSeq &seq, uint16 op, byt
  			break;
  		Common::Rect rect(Common::Point(ivals[0], ivals[1]), ivals[2], ivals[3]);
  		_vm->getStoredAreaBuffer().blitFrom(_vm->_compositionBuffer, rect, rect);
@@ -1588,7 +1591,7 @@ index 36ed1bc4..398cc0f2 100644
  		break;
  	}
  	case 0x4210: { // SAVE GETPUT REGION (getput area) x,y,w,h:int
-@@ -986,7 +995,20 @@ void TTMInterpreter::handleOperation(TTMEnviro &env, TTMSeq &seq, uint16 op, byt
+@@ -986,7 +998,20 @@ void TTMInterpreter::handleOperation(TTMEnviro &env, TTMSeq &seq, uint16 op, byt
  		int width = ivals[2];
  		if (width == 0)
  			width = SCREEN_WIDTH - ivals[0];
