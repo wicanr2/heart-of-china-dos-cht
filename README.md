@@ -4,8 +4,8 @@
 > 透過自製 patch 的 ScummVM、真實點陣中文字、與一份逐句重譯的中文劇本。
 >
 > 🚧 **進行中。** 全劇本 **4,651 句**已從遊戲檔挖出（英文原版），中文化引擎機制沿用
-> 姊妹作《Rise of the Dragon》已驗證的 **engine-side overlay**：真實 **24×24 點陣中文字**
-> 直接畫在遊戲畫面上，按 **F8** 即時切換 **英文 / 中文**。
+> 姊妹作《Rise of the Dragon》已驗證的 **engine-side overlay**：真實點陣中文字
+> 直接畫在遊戲畫面上，按 **F8** 即時循環 **英文 / 中文 24×24 / 中文 16×16**。
 
 ## 🎬 實機展示
 
@@ -22,12 +22,18 @@
 | ![chi](screenshots/showcase_zh_chi.png) | ![thought](screenshots/showcase_zh_thought.png) |
 | 趙奇：「你不懂。西方醫院治不了這種蛇毒。」| 老馬心想：「唉喲！女人啊！」（thought-bubble 框型）|
 
-**同一句台詞，按 F8 切換 英文（原始）↔ 中文：**
+**按 F8 即時循環三種顯示模式：英文（原始）→ 中文 24×24 → 中文 16×16：**
 
 | 原版（英文） | 中文化（本專案）|
 |---|---|
 | ![en](screenshots/poc_en_d12_1.png) | ![zh](screenshots/poc_zh_d12_1.png) |
 | `CHI: Lucky, we can't leave without Nurse Kate!` | `趙奇：老馬，我們不能丟下凱特護士就走！` |
+
+同一句、兩種字級（**24×24** 高解析 vs **16×16** 較貼近原排版，一行放得下）：
+
+| 中文 24×24 | 中文 16×16 |
+|---|---|
+| ![24](screenshots/showcase_zh_lucky.png) | ![16](screenshots/showcase_zh16.png) |
 
 > ✅ **全劇本 4,651 句已翻完**（4,771 個翻譯條目、0 個非 Big5 字），民初冒險通俗派語氣。
 
