@@ -10,7 +10,7 @@ Output:
 Also: enforces canonical nameplates (CONTEXT.md 譯名表) for consistency,
 reports missing units (so failed batches can be re-run) and any non-Big5 chars.
 """
-import json, glob, os, sys
+import json, glob, os, sys, re
 
 # Canonical nameplates / recurring proper nouns — override agent output for 100% consistency.
 CANON = {
@@ -39,6 +39,15 @@ def normalize(s):
     for a, b in NORMALIZE.items():
         if a in s:
             s = s.replace(a, b)
+    return s
+
+_OPT_RE = re.compile(r'(?:^|\r)\s*\d+[.．]')
+def collapse_options(s):
+    """Numbered-option choice lists ('1. .. \\r\\r 2. ..') overflow the dialog box at
+    24px CJK because each \\r\\r adds a blank line. Tighten \\r\\r->\\r for option lists
+    (>=2 numbered markers). Leaves narration paragraph breaks alone."""
+    if '\r\r' in s and len(_OPT_RE.findall(s)) >= 2:
+        s = s.replace('\r\r', '\r')
     return s
 
 def load_units():
@@ -74,6 +83,13 @@ def main():
         for k, v in sup.items():
             if not k.startswith('_'):
                 zh[k] = normalize(v)
+    # tighten numbered-option choice lists so they fit the dialog box at 24px CJK
+    n_opt = 0
+    for k in list(zh.keys()):
+        if not k.startswith('UI:'):
+            nv = collapse_options(zh[k])
+            if nv != zh[k]:
+                zh[k] = nv; n_opt += 1
     # Big5 check
     bad = []
     for k, v in zh.items():
