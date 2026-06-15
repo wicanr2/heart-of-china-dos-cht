@@ -78,8 +78,12 @@
 - [x] **16×16 字型**：`build_cjk_font.py --size 16` → `hoc_zh16.dcjk`（13709 glyphs）；
       F8 循環 `_avail` = 英文 → 中文24 → 中文16（HOC 無 de.dtr，cycleMode 自動略過德文模式）
 - [x] 實機驗證：scene d12 多句中文上畫面、24/16 兩種字級（`screenshots/showcase_zh*.png`）
-- [ ] UI/選單（`hinv.req`/`hvcr.req`/`hoc.rst`）+ TTM 畫面文字（電報/告示/螢幕）抽取與翻譯
-- [ ] 人工潤飾關鍵劇情對白
+- [x] **UI/選單中文化**：抽 `hvcr.req`/`hinv.req` 玩家可見字串 → `translations/ui_supplement.json`
+      （存檔/檔案/選項/控制設定/校準/離開/遊玩 + 確認框 + 校準提示 + GIVE/DROP/EXIT…）；
+      `build_zh_json.py` 合併。autopilot 加 `menu` op → 實機驗證**主選單整套中文**
+      （`screenshots/showcase_zh_menu.png`）
+- [x] **TTM 畫面文字**：HOC 僅 1 條（`ftank3s.ttm` "MEANWHILE"→「與此同時」），已補
+- [ ] 人工潤飾關鍵劇情對白（選擇性）
 
 ### Phase 4 — game-tester QA + 視覺驗證 ⬜
 - [ ] HOC autopilot 腳本，逐場景截圖、排版/斷行 QA、showcase

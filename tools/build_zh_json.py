@@ -67,6 +67,13 @@ def main():
     for k, v in CANON.items():
         if k in key_map:
             zh[k] = v
+    # merge hand-authored UI / system-menu / TTM supplement (lookupUI keys)
+    sup_path = 'translations/ui_supplement.json'
+    if os.path.exists(sup_path):
+        sup = json.load(open(sup_path, encoding='utf-8'))
+        for k, v in sup.items():
+            if not k.startswith('_'):
+                zh[k] = normalize(v)
     # Big5 check
     bad = []
     for k, v in zh.items():

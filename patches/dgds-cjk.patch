@@ -1,9 +1,9 @@
 diff --git a/engines/dgds/autopilot.cpp b/engines/dgds/autopilot.cpp
 new file mode 100644
-index 00000000..5f7b4e20
+index 00000000..9af38526
 --- /dev/null
 +++ b/engines/dgds/autopilot.cpp
-@@ -0,0 +1,103 @@
+@@ -0,0 +1,109 @@
 +/* ScummVM dgds autopilot (ROTD CHT). See autopilot.h. */
 +
 +#include "common/file.h"
@@ -12,6 +12,7 @@ index 00000000..5f7b4e20
 +#include "dgds/autopilot.h"
 +#include "dgds/dgds.h"
 +#include "dgds/scene.h"
++#include "dgds/menu.h"
 +
 +namespace Dgds {
 +
@@ -37,6 +38,7 @@ index 00000000..5f7b4e20
 +		else if (op == "shot") c.op = 'p';
 +		else if (op == "wait") c.op = 'w';
 +		else if (op == "lang") c.op = 'g';
++		else if (op == "menu") c.op = 'm';
 +		else if (op == "quit") c.op = 'q';
 +		else continue;
 +		_cmds.push_back(c);
@@ -94,6 +96,10 @@ index 00000000..5f7b4e20
 +	case 'g': // set display mode (0=Orig/EN 1=中文24 2=中文16 3=Deutsch)
 +		engine->getCJK().setMode((DisplayMode)c.arg);
 +		_wait = 3;
++		break;
++	case 'm': // open the main system menu (QA: verify translated UI)
++		engine->setMenuToTrigger(kMenuMain);
++		_wait = 30;
 +		break;
 +	case 'w':
 +		_wait = c.arg;
