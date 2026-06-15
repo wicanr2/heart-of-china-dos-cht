@@ -12,10 +12,24 @@ reports missing units (so failed batches can be re-run) and any non-Big5 chars.
 """
 import json, glob, os, sys, re
 
+# Official 軟體世界 (1990s) 譯名 — restored from the manual (攻略/珍108). These OVERRIDE the
+# machine-translation drafts everywhere. 賽奇 = the named 中國忍者 (Zhao Chi). See CONTEXT.md.
+RENAME = [  # (machine draft, 官方軟體世界) — value-only replace, longest/compound first
+    ("傑克·馬斯特斯", "傑克馬斯特斯"), ("傑克·馬斯特", "傑克馬斯特斯"),
+    ("老馬", "來福"), ("趙奇", "賽奇"),
+    ("李鄧", "鄧立"), ("羅麥斯", "羅麥士"),
+]
+# Kate = 凱特 (官方; 手冊掃描看似「凱茶」實為 OCR 誤讀，已更正)
+def apply_rename(s):
+    for a, b in RENAME:
+        if a in s:
+            s = s.replace(a, b)
+    return s
+
 # Canonical nameplates / recurring proper nouns — override agent output for 100% consistency.
 CANON = {
-    "UI:LUCKY": "老馬", "UI:CHI": "趙奇", "UI:KATE": "凱特", "UI:LOMAX": "羅麥斯",
-    "UI:LI DENG": "李鄧", "UI:DENG": "李鄧", "UI:Li Deng": "李鄧",
+    "UI:LUCKY": "來福", "UI:CHI": "賽奇", "UI:KATE": "凱特", "UI:LOMAX": "羅麥士",
+    "UI:LI DENG": "鄧立", "UI:DENG": "鄧立", "UI:Li Deng": "鄧立",
     "UI:SARDAR": "薩達爾", "UI:AMA": "阿瑪", "UI:WU": "吳", "UI:HO": "何",
     "UI:LAMA": "喇嘛", "UI:KUBLA": "忽必", "UI:BIJAYA": "比賈亞", "UI:NALINI": "娜里妮",
     "UI:HAKIM": "哈金", "UI:KASIM": "卡辛", "UI:ALMIRA": "艾米拉",
@@ -83,6 +97,12 @@ def main():
         for k, v in sup.items():
             if not k.startswith('_'):
                 zh[k] = normalize(v)
+    # apply official 軟體世界 譯名 (老馬→來福, 趙奇→賽奇, 李鄧→鄧立, 羅麥斯→羅麥士) everywhere
+    n_ren = 0
+    for k in list(zh.keys()):
+        nv = apply_rename(zh[k])
+        if nv != zh[k]:
+            zh[k] = nv; n_ren += 1
     # tighten numbered-option choice lists so they fit the dialog box at 24px CJK
     n_opt = 0
     for k in list(zh.keys()):
@@ -90,6 +110,7 @@ def main():
             nv = collapse_options(zh[k])
             if nv != zh[k]:
                 zh[k] = nv; n_opt += 1
+    print(f"# renamed {n_ren} values to official 譯名, collapsed {n_opt} option lists", file=sys.stderr)
     # Big5 check
     bad = []
     for k, v in zh.items():

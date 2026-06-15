@@ -62,7 +62,7 @@
 - [x] **對白鍵改 game-agnostic**：`dialog.cpp drawForeground` 用 `_fileNum ? _fileNum : sceneNum`
       （HOC 走 DDS fileNum、ROTD 走 scene；同一 binary 兩款通吃）
 - [x] **autopilot `dlg` 支援 `F:N`**（HOC DDS 對白）：`autopilot.cpp` showDialog(fileNum,num)
-- [x] **驗收**：scene d12 對白渲染為「老馬，我們不能丟下凱特護士就走！」+ 名牌「趙奇」
+- [x] **驗收**：scene d12 對白渲染為「來福，我們不能丟下凱特護士不管！」+ 名牌「賽奇」（官方軟體世界譯名）
       真 24×24（`screenshots/poc_zh_d12_1.png`、`poc_zh_d12_27.png`）
 
 ### Phase 2 — 翻譯 overlay + F8 語言切換 ✅（機制）

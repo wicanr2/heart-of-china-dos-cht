@@ -47,3 +47,8 @@ scripts/_*.sh
 
 # Translation intermediates (src_units.json = copyrighted EN script; regenerate via prep_translation.py)
 i18n/
+
+# Copyrighted reference materials (軟體世界 manual/magazine scans) — reference only, NEVER publish
+攻略/
+*.pdf
+*.rar
