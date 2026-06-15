@@ -84,9 +84,37 @@ L
   echo "   -> dist/hoc-cht-FULL-windows-x86_64.zip ($(du -h dist/hoc-cht-FULL-windows-x86_64.zip|cut -f1))"
 }
 
+do_mac() {
+  echo ">> macOS FULL .app（含遊戲、雙擊直接進中文版）"
+  # 需先把 CI artifact 解到 dist/「Heart of China CHT.app」(無 Mac 也能組，僅組裝不編譯)
+  #   gh run download <RID> -n hoc-cht-macos -D dist/_mac && tar xzf dist/_mac/*.tar.gz -C dist/
+  local SRC="dist/Heart of China CHT.app"
+  [ -d "$SRC" ] || { echo "ERROR: $SRC 不存在；先下載 CI 的 hoc-cht-macos artifact 解到 dist/"; return 1; }
+  local APP="dist/hoc-cht-FULL-mac/Heart of China CHT.app"
+  rm -rf dist/hoc-cht-FULL-mac; mkdir -p "$(dirname "$APP")"; cp -a "$SRC" "$APP"
+  mkdir -p "$APP/Contents/Resources/game"; for f in $(gamefiles); do cp "$f" "$APP/Contents/Resources/game/"; done
+  # 包裝執行檔 → 雙擊直接 boot 內嵌遊戲
+  if [ ! -f "$APP/Contents/MacOS/scummvm.bin" ]; then mv "$APP/Contents/MacOS/scummvm" "$APP/Contents/MacOS/scummvm.bin"; fi
+  cat > "$APP/Contents/MacOS/scummvm" <<'W'
+#!/bin/bash
+D="$(cd "$(dirname "$0")" && pwd)"
+exec "$D/scummvm.bin" --extrapath="$D/../Resources/extra" --path="$D/../Resources/game" --auto-detect "$@"
+W
+  chmod +x "$APP/Contents/MacOS/scummvm"
+  cat > "dist/hoc-cht-FULL-mac/開啟說明.txt" <<'D'
+中國之心 繁體中文版（macOS, 含遊戲, 自留勿散布）
+雙擊「Heart of China CHT.app」即直接進中文版。
+首次若被 Gatekeeper 擋（未簽署）：終端機執行
+  xattr -dr com.apple.quarantine "Heart of China CHT.app"
+遊戲中 F8 切 英文 / 中文24 / 中文16。
+D
+  ( cd dist && tar czf hoc-cht-FULL-mac.tar.gz hoc-cht-FULL-mac )
+  echo "   -> dist/hoc-cht-FULL-mac.tar.gz ($(du -h dist/hoc-cht-FULL-mac.tar.gz|cut -f1))"
+}
+
 case "$WHAT" in
-  linux) do_linux;; appimage) do_appimage;; windows) do_windows;;
+  linux) do_linux;; appimage) do_appimage;; windows) do_windows;; mac) do_mac;;
   all) do_linux; do_appimage; do_windows;;
-  *) echo "usage: $0 [linux|appimage|windows|all]"; exit 1;;
+  *) echo "usage: $0 [linux|appimage|windows|mac|all]"; exit 1;;
 esac
 echo "FULL 打包完成（含遊戲，自留勿散布）。"
