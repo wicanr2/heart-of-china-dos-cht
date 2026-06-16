@@ -83,3 +83,49 @@ jobs:
           tar czf hoc-cht-macos.tar.gz "$APP"
       - uses: actions/upload-artifact@v4
         with: { name: hoc-cht-macos, path: hoc-cht-macos.tar.gz }
+
+  # ---- Android APK (engine + assets; game injected locally via tools/inject_android.sh) ----
+  android:
+    needs: assets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: cht-assets, path: assets }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-35 build-tools;35.0.0 ndk;23.2.8568313'
+      - name: ndk env
+        run: echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/23.2.8568313" >> $GITHUB_ENV
+      - name: deps
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq build-essential
+      - name: fetch oboe into the NDK sysroot
+        run: |
+          SYSROOT="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+          wget -q https://dl.google.com/dl/android/maven2/com/google/oboe/oboe/1.9.0/oboe-1.9.0.aar -O /tmp/oboe.aar
+          unzip -q /tmp/oboe.aar -d /tmp/oboe
+          OBOE_INC="$(dirname "$(find /tmp/oboe -name Oboe.h | head -1)")"
+          cp -r "$OBOE_INC" "$SYSROOT/usr/include/"
+          SO="$(find /tmp/oboe -name liboboe.so -path '*arm64*' | head -1)"
+          cp "$SO" "$SYSROOT/usr/lib/aarch64-linux-android/"
+          test -f "$SYSROOT/usr/include/oboe/Oboe.h" && echo "oboe headers + lib installed"
+      - name: clone + patch scummvm
+        run: |
+          git clone https://github.com/scummvm/scummvm
+          cd scummvm && git checkout "$SCUMMVM_COMMIT"
+          git apply ../patches/dgds-cjk.patch || patch -p1 < ../patches/dgds-cjk.patch
+          # wait for a valid Surface before eglCreateWindowSurface() (fixes insta-退 on S25+/Android 16)
+          git apply ../patches/android-surface-race.patch || patch -p1 < ../patches/android-surface-race.patch
+          # boot straight into the bundled HOC game ("china") instead of the launcher
+          git apply ../patches/android-autostart-china.patch || patch -p1 < ../patches/android-autostart-china.patch
+      - name: configure + build APK
+        run: |
+          cd scummvm
+          ./configure --host=android-arm64-v8a --enable-release \
+            --disable-all-engines --enable-engine=dgds
+          make -j3 androiddistdebug
+          find . -name '*.apk' -exec cp {} ../hoc-cht-android.apk \;
+      - uses: actions/upload-artifact@v4
+        with: { name: hoc-cht-android, path: hoc-cht-android.apk }
