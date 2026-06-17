@@ -52,3 +52,6 @@ i18n/
 攻略/
 *.pdf
 *.rar
+
+# Title-design working frames (raw game art — local only)
+design/

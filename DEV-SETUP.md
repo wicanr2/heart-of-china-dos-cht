@@ -14,7 +14,7 @@
 | `patches/android-*.patch` | Android surface-race + autostart-china | git |
 | `translations/zh.json` | 全劇本譯文（UTF-8，4832 條目）→ `build/zh.dtr` | git |
 | `translations/ui_supplement.json` | UI/選單/TTM 手譯 | git |
-| `tools/` | `extract_dds`(對白) / `build_cjk_font` / `build_translation` / `build_zh_json` / `prep_translation` / `inject_android` / `game_tester` … | git |
+| `tools/` | `extract_dds`(對白) / `build_cjk_font` / `build_translation` / `build_zh_json` / `prep_translation` / `build_title_mask`(片頭標題毛筆遮罩) / `inject_android` / `game_tester` … | git |
 | `scripts/` | `package_linux` / `package_appimage` / `build_windows` / `package_full` | git |
 | `docs/GAME_TEST_REPORT.md` | QA 三輪驗收 + 修正紀錄 | git |
 | `CONTEXT.md` / `PLAN.md` / `CLAUDE.md` | 術語/譯名表（官方軟體世界譯名）/ 工程計畫 / 專案須知 | git |
@@ -64,6 +64,11 @@ python3 tools/prep_translation.py dialogs_en.json i18n      # 拆 unit + 名牌
   （Linux `share/hoc-cht/`、Win/Mac `extra/`、Android bundle、AppImage 在映像內）。**免重編引擎**。
 - **改引擎**：改 `scummvm-src/engines/dgds/*` → `make` → 重產 patch：
   `(cd scummvm-src && git diff HEAD -- engines/dgds) > patches/dgds-cjk.patch` → 全平台重編。
+  ⚠️ 有**新檔**（如 `hoc_title_glyphs.h`）要先 `git -C scummvm-src add engines/dgds/<新檔>` 再 `git diff HEAD`，
+  否則未追蹤檔不會進 patch；產完用 `patch -p1 --dry-run` 在 pristine base 驗證可乾淨套用。
+- **片頭標題中文副標**：「中國之心」毛筆遮罩已**編進 patch**（`hoc_title_glyphs.h`，套 patch 即生成，免額外步驟）。
+  要**換字體/字級**：`python3 tools/build_title_mask.py [--font 毛筆TTF] [--size N]` → 重產該 header → 重編引擎。
+  （預設 AR PL UKai 楷書；開源行/草書缺繁體「國」，見 skill §10。）
 - **commit/push**：remote = `git@github.com:wicanr2/heart-of-china-dos-cht.git`。
   `game_en/`、`攻略/`、`dist/`、`i18n/`、`res/`、`scummvm-src/` 全 gitignore，**永不 push**。
 
