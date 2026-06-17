@@ -174,14 +174,16 @@ index 00000000..16d0eb13
 +#endif
 diff --git a/engines/dgds/cjk.cpp b/engines/dgds/cjk.cpp
 new file mode 100644
-index 00000000..0e36da01
+index 00000000..81ba24af
 --- /dev/null
 +++ b/engines/dgds/cjk.cpp
-@@ -0,0 +1,354 @@
+@@ -0,0 +1,408 @@
 +/* ScummVM dgds CJK localization support (Rise of the Dragon CHT). Non-upstream. */
 +
 +#include "common/file.h"
 +#include "common/debug.h"
++#include "common/system.h"
++#include "graphics/paletteman.h"
 +#include "dgds/cjk.h"
 +#include "dgds/font.h"
 +
@@ -356,6 +358,58 @@ index 00000000..0e36da01
 +			if (row[cx >> 3] & (0x80 >> (cx & 7)))
 +				base[ty * pitch + tx] = (byte)color;
 +		}
++	}
++}
++
++byte CJKSupport::nearestPalIdx(const byte *pal, int r, int g, int b) {
++	int best = 0; long bestd = (1L << 30);
++	for (int i = 0; i < 256; i++) {
++		int dr = pal[i * 3] - r, dg = pal[i * 3 + 1] - g, db = pal[i * 3 + 2] - b;
++		long d = (long)dr * dr + (long)dg * dg + (long)db * db;
++		if (d < bestd) { bestd = d; best = i; }
++	}
++	return (byte)best;
++}
++
++// HOC-CHT: draw 「中國之心」 (gold, dark-outlined) centered under the held "HEART OF CHINA"
++// title lettering. dst = 640x400 CLUT8 hi-res buffer; colors are nearest palette indices from
++// the live title palette (xx.pal). 設計規格：金黃填 #D8B45A、深青墨藍描邊 #1E2A38、橫排 4 字。
++void CJKSupport::drawTitleSubtitle(Graphics::ManagedSurface *dst) {
++	if (!_glyphs) return;
++	byte pal[768];
++	g_system->getPaletteManager()->grabPalette(pal, 0, 256);
++	// The TITLE.SCR background hosts two phases: the calligraphic 中國之心 first, then the held
++	// English "HEART OF CHINA". Only show the subtitle under the English logo. The calligraphy's
++	// teal 「心」 sits in the low-centre band (~y300); under the English title that band is just
++	// clear copper map. So skip while a solid teal block is present there.
++	{
++		const byte *pix = (const byte *)dst->getBasePtr(0, 0);
++		int teal = 0;
++		for (int sy = 296; sy < 340; sy += 2)
++			for (int sx = 290; sx < 360; sx += 2) {
++				byte pi = pix[sy * dst->pitch + sx];
++				int r = pal[pi * 3], g = pal[pi * 3 + 1], b = pal[pi * 3 + 2];
++				if (r < 110 && g > 110 && b > 110) teal++;  // calligraphy ink (teal/cyan)
++			}
++		if (teal > 12) return;  // calligraphy frame -> don't draw the subtitle
++	}
++	const byte gold = nearestPalIdx(pal, 245, 208, 120); // bright gold (pop on copper)
++	const byte dark = nearestPalIdx(pal, 26, 30, 40);    // dark navy outline
++	static const byte s[] = {0xa4, 0xa4, 0xb0, 0xea, 0xa4, 0xa7, 0xa4, 0xdf}; // 中國之心 (Big5)
++	const int nch = 4;
++	const int adv = _w + 6;                  // 24px glyph + 6px tracking (640-space)
++	const int totalw = nch * adv - 6;
++	const int x = (dst->w - totalw) / 2;     // centered on the title art
++	const int y = 282;                       // in the clear copper band below the CHINA lettering
++	static const int ox[] = {-2, 2, 0, 0, -2, 2, -2, 2};
++	static const int oy[] = {0, 0, -2, 2, -2, -2, 2, 2};
++	for (int c = 0; c < nch; c++) {
++		int idx = big5LinearIndex(s[c * 2], s[c * 2 + 1]);
++		if (idx < 0) continue;
++		int gx = x + c * adv;
++		for (int o = 0; o < 8; o++)          // dark outline (8-way, 2px)
++			drawGlyph(dst, idx, gx + ox[o], y + oy[o], dark);
++		drawGlyph(dst, idx, gx, y, gold);    // gold fill on top
 +	}
 +}
 +
@@ -534,10 +588,10 @@ index 00000000..0e36da01
 +} // namespace Dgds
 diff --git a/engines/dgds/cjk.h b/engines/dgds/cjk.h
 new file mode 100644
-index 00000000..0f1a3eb8
+index 00000000..3ebef573
 --- /dev/null
 +++ b/engines/dgds/cjk.h
-@@ -0,0 +1,120 @@
+@@ -0,0 +1,123 @@
 +/* ScummVM dgds CJK / multi-language localization support (Rise of the Dragon CHT).
 + * Non-upstream: engine-side translation overlays + bitmap fonts + display-mode cycle.
 + */
@@ -614,8 +668,11 @@ index 00000000..0f1a3eb8
 +	// header doesn't float on top of the playing head (the English header is hidden under the head).
 +	void clearDeferredBgRect(const Common::Rect &rect);
 +	void flushDeferred(Graphics::ManagedSurface *dst640);
++	// HOC-CHT: overlay the gold Chinese subtitle 「中國之心」 under the片頭 "HEART OF CHINA" lettering.
++	void drawTitleSubtitle(Graphics::ManagedSurface *dst);
 +
 +private:
++	static byte nearestPalIdx(const byte *pal, int r, int g, int b);
 +	struct BitmapFont {
 +		byte w = 0, h = 0, bpr = 0;
 +		uint32 num = 0;
@@ -659,7 +716,7 @@ index 00000000..0f1a3eb8
 +
 +#endif
 diff --git a/engines/dgds/dgds.cpp b/engines/dgds/dgds.cpp
-index 63976485..4d4e26c4 100644
+index 63976485..2839c00e 100644
 --- a/engines/dgds/dgds.cpp
 +++ b/engines/dgds/dgds.cpp
 @@ -35,6 +35,8 @@
@@ -694,7 +751,7 @@ index 63976485..4d4e26c4 100644
  
  		_console = new Console(this);
  		_resource = new ResourceManager();
-@@ -384,6 +393,60 @@ void DgdsEngine::init(bool restarting) {
+@@ -384,6 +393,64 @@ void DgdsEngine::init(bool restarting) {
  	g_system->fillScreen(0);
  }
  
@@ -724,6 +781,10 @@ index 63976485..4d4e26c4 100644
 +		}
 +	}
 +	_cjk.flushDeferred(&_hiresBuffer);
++	// HOC-CHT: overlay the gold 中國之心 subtitle under the "HEART OF CHINA" intro title.
++	// The attract title is drawn over the TITLE.SCR background; latch on that filename.
++	if (_cjk.isCJK() && _backgroundFile.hasPrefixIgnoreCase("TITLE"))
++		_cjk.drawTitleSubtitle(&_hiresBuffer);
 +	g_system->copyRectToScreen(_hiresBuffer.getPixels(), dp, 0, 0, SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2);
 +}
 +
@@ -755,7 +816,7 @@ index 63976485..4d4e26c4 100644
  void DgdsEngine::loadGameFiles() {
  	REQFileData invRequestData;
  	REQFileData vcrRequestData;
-@@ -391,6 +454,9 @@ void DgdsEngine::loadGameFiles() {
+@@ -391,6 +458,9 @@ void DgdsEngine::loadGameFiles() {
  
  	_fontManager->loadFonts(getGameId(), _resource, _decompressor);
  
@@ -765,7 +826,7 @@ index 63976485..4d4e26c4 100644
  	switch (getGameId()) {
  	case GID_DRAGON:
  		if (getPlatform() == Common::kPlatformDOS)
-@@ -487,6 +553,22 @@ void DgdsEngine::loadGameFiles() {
+@@ -487,6 +557,22 @@ void DgdsEngine::loadGameFiles() {
  
  	debug(1, "Parsed Inv Request:\n%s", invRequestData.dump().c_str());
  	debug(1, "Parsed VCR Request:\n%s", vcrRequestData.dump().c_str());
@@ -788,7 +849,7 @@ index 63976485..4d4e26c4 100644
  }
  
  void DgdsEngine::loadRestartFile() {
-@@ -530,6 +612,14 @@ void DgdsEngine::pumpMessages() {
+@@ -530,6 +616,14 @@ void DgdsEngine::pumpMessages() {
  			case kDgdsKeyToggleClock:
  				_clock.toggleVisibleUser();
  				break;
@@ -803,7 +864,7 @@ index 63976485..4d4e26c4 100644
  			case kDgdsKeyNextChoice:
  				if (_menu->menuShown())
  					_menu->nextChoice();
-@@ -574,7 +664,8 @@ void DgdsEngine::pumpMessages() {
+@@ -574,7 +668,8 @@ void DgdsEngine::pumpMessages() {
  				|| ev.type == Common::EVENT_RBUTTONDOWN || ev.type == Common::EVENT_RBUTTONUP
  				|| ev.type == Common::EVENT_MOUSEMOVE) {
  			_lastMouseEvent = ev.type;
@@ -813,7 +874,7 @@ index 63976485..4d4e26c4 100644
  			// We can keep going if there were multiple moves or a move then a button, but
  			// stop if there was a button event to process it now.
  			if (_lastMouseEvent != Common::EVENT_MOUSEMOVE)
-@@ -623,6 +714,9 @@ Common::Error DgdsEngine::run() {
+@@ -623,6 +718,9 @@ Common::Error DgdsEngine::run() {
  	init(false);
  	loadGameFiles();
  
@@ -823,7 +884,7 @@ index 63976485..4d4e26c4 100644
  	// If a savegame was selected from the launcher, load it now.
  	int saveSlot = ConfMan.getInt("save_slot");
  	if (saveSlot != -1)
-@@ -674,6 +768,28 @@ Common::Error DgdsEngine::run() {
+@@ -674,6 +772,28 @@ Common::Error DgdsEngine::run() {
  		} else {
  			debug(10, "****  Starting frame %d time %d ****", frameCount, _thisFrameMs);
  
@@ -852,7 +913,7 @@ index 63976485..4d4e26c4 100644
  			bool clearedDlg = _scene->checkForClearedDialogs();
  
  			// Willy pauses script execution when the palette is faded by an active
-@@ -789,7 +905,7 @@ Common::Error DgdsEngine::run() {
+@@ -789,7 +909,7 @@ Common::Error DgdsEngine::run() {
  			bool gameRunning = (!haveActiveDialog && _gameGlobals->getGlobal(0x57));
  			_clock.update(gameRunning && shouldRunScripts);
  
@@ -861,7 +922,7 @@ index 63976485..4d4e26c4 100644
  
  			_justChangedScene1 = false;
  		}
-@@ -807,7 +923,11 @@ Common::Error DgdsEngine::run() {
+@@ -807,7 +927,11 @@ Common::Error DgdsEngine::run() {
  				CursorMan.showMouse(false);
  		}
  
